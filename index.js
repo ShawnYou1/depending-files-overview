@@ -11,8 +11,10 @@ const debugPos = 50; // 0, 10, 11, 13
 // the completely path is rootPath + 'folder1/file1'
 const customerRootPath = rootPath;
 
+const relativePathPrefixReg = /^\.\//;
+
 // match a file content
-let modulePathReg = /(export|import).+from\s+([\w\/\.\-\_"']+)([^;])?/g;
+let modulePathReg = /(export|import).+from\s+(['"])([\w\/\.\-\_]+)\2([^;])?/g;
 
 
 main();
@@ -41,12 +43,12 @@ function recursivePath(aPath, filesPath = []) {
     newPath = `${aPath}${name}`;
     stats = fs.statSync(newPath);
     if (stats.isDirectory()) {
-      recursivePath(`${newPath}/`, filesPath); 
+      recursivePath(`${newPath}/`, filesPath);
     } else {
       if (/\.(js|ts)$/.test(name)) {
         filesPath.push({
           fileName: name,
-          path: aPath, 
+          path: aPath,
         });
       }
     }
@@ -68,7 +70,7 @@ function getAllModule(content, currentPath) {
       let modulePath = parse(str);
       let fixedPath = fixPath(modulePath, currentPath);
       console.log('fixed', fixedPath);
-      return fixedPath; 
+      return fixedPath;
     });
   }
 
@@ -81,26 +83,27 @@ function getAllModule(content, currentPath) {
 function parse(lineCode) {
   console.log(lineCode);
   let matches = lineCode.match(/(['"])(.+)\1/);
-  if (matches && Array.isArray(matches)) {
+  if (matches && Array.isArray(matches) && matches.length >= 3) {
     return matches[2];
   } else {
-    return ''; 
+    return '';
   }
 }
 
 // conver relative path to total path
 // @relativePath {String} like 'a/b/c' or './a/b/c'
 // @currentPath {String} current file path with root path
-// @customerRootPath {String} 'a/b/c' 
+// @customerRootPath {String} 'a/b/c'
 // @return {String} with completely path
 function fixPath(relativePath, currentPath) {
   let rt = relativePath;
 
   // prefix './'
-  if (/^\.\//.test(relativePath)) {
-    rt = currentPath + relativePath.replace(/^\.\//, ''); 
+  relativePathPrefixReg.index = 0;
+  if (relativePathPrefixReg.test(relativePath)) {
+    rt = currentPath + relativePath.replace(relativePathPrefixReg, '');
   } else {
-    rt = customerRootPath + relativePath; 
+    rt = customerRootPath + relativePath;
   }
 
   // fix index.js
