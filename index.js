@@ -2,39 +2,35 @@ const fs = require('fs');
 
 // use react as the debug
 // https://github.com/facebook/react/tree/master/packages
-const rootPath = './react-master/packages/';
-
-// console a log when loop a array
-const debugPos = 50; // 0, 10, 11, 13
+const ROOT_PATH = './react-master/packages/';
 
 // if thereis a import path 'folder1/file1'
-// the completely path is rootPath + 'folder1/file1'
-const customerRootPath = rootPath;
+// the completely path is ROOT_PATH + 'folder1/file1'
+// ofen config it by likeing webpack
+const CUSTOMER_ROOT_PATH = ROOT_PATH;
 
-const relativePathPrefixReg = /^\.\//;
+const RELATIVE_PATH_PREFIX_REG = /^\.\//;
 
-// match a file content
-const modulePathReg = /(export|import).+from\s+(['"])([\w\/\.\-\_]+)\2([^;])?/g;
+// a regex that match a line module
+const MODULE_PATH_REG = /(export|import).+from\s+(['"])([\w\/\.\-\_]+)\2([^;])?/g;
 
 
 main();
 
 function main() {
-  let filesPath = recursivePath(rootPath);
+    let filesPath = recursivePath(ROOT_PATH);
 
-  let filePathRelation = filesPath.map((item, index) => {
-    if (index === debugPos || true) {
-      let totalPath = `${item.path}/${item.fileName}`;
-      let content = fs.readFileSync(totalPath, 'utf8');
-      item.from = getAllModule(content, item.path);
-    }
-    return item;
-  });
-  // console.log(filePathRelation);
+    let filePathRelation = filesPath.map((item, index) => {
+        let totalPath = `${item.path}/${item.fileName}`;
+        let content = fs.readFileSync(totalPath, 'utf8');
+        item.from = getAllModule(content, item.path);
+        return item;
+    });
+    // console.log(filePathRelation);
 
-  // convert filePathRelation to a tree with depending relation
-  let treeDependRelation = convertPath2tree(filePathRelation);
-  console.log(treeDependRelation);
+    // convert filePathRelation to a tree with depending relation
+    let treeDependRelation = convertPath2tree(filePathRelation);
+    console.log(treeDependRelation);
 }
 
 // recursion a path
@@ -67,7 +63,7 @@ function recursivePath(aPath, filesPath = []) {
 // @return {Array} all module path with root path
 function getAllModule(content, currentPath) {
   let rt = [];
-  let modulesPath = content.match(modulePathReg);
+  let modulesPath = content.match(MODULE_PATH_REG);
 
   if (Array.isArray(modulesPath)) {
     rt = modulesPath.map((str) => {
@@ -97,16 +93,16 @@ function parse(lineCode) {
 // conver relative path to total path
 // @relativePath {String} like 'a/b/c' or './a/b/c'
 // @currentPath {String} current file path with root path
-// @customerRootPath {String} 'a/b/c'
+// @CUSTOMER_ROOT_PATH {String} 'a/b/c'
 // @return {String} with completely path
 function fixPath(relativePath, currentPath) {
   let rt = relativePath;
 
   // prefix './'
-  if (relativePathPrefixReg.test(relativePath)) {
-    rt = currentPath + relativePath.replace(relativePathPrefixReg, '');
+  if (RELATIVE_PATH_PREFIX_REG.test(relativePath)) {
+    rt = currentPath + relativePath.replace(RELATIVE_PATH_PREFIX_REG, '');
   } else {
-    rt = customerRootPath + relativePath;
+    rt = CUSTOMER_ROOT_PATH + relativePath;
   }
 
   // fix shorthand module  add index.js
