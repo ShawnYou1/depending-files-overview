@@ -134,7 +134,13 @@ function convertPath2tree(filePathRelation) {
     // console.log(22, JSON.stringify(tree));
 
     // build node depend on relation
-    // TODO
+    filePathRelation.forEach((item, index) => {
+        item.treeNode['depending'] = [];
+        item.from.forEach((dependPath, subIndex) => {
+            let dependNode = findByPath(dependPath, tree);
+            item.treeNode['depending'].push(dependNode);
+        });
+     });
 
     return tree;
 }
@@ -160,12 +166,10 @@ function recursiveOnePath(root, filePath) {
 // @path {String} a path
 // @return {Object} return the path's object
 function findByPath(filePath, tree) {
-    console.log(filePath);
     let onePathArr = filePath.split('/');
 
     let tempPoint = tree;
     onePathArr.forEach((fName) => {
-        console.log(11, fName);
         if (tempPoint[fName]) {
             tempPoint = tempPoint[fName];
         }
