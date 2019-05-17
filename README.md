@@ -4,22 +4,29 @@ This Project is developed to let the programmer have an overview when they meet 
 ## Example
 ### React's files overview
 ```
-[ { fileName: 'index.js',
-    path: './react-master/packages/create-subscription/',
-    from:
-     [ './react-master/packages/create-subscription/src/createSubscription.js' ] },
-  { fileName: 'index.js',
-    path: './react-master/packages/create-subscription/npm/',
-    from: [] },
-  { fileName: 'createSubscription-test.internal.js',
-    path: './react-master/packages/create-subscription/src/__tests__/',
-    from: [] },
-  { fileName: 'createSubscription.js',
-    path: './react-master/packages/create-subscription/src/',
-    from:
-     [ './react-master/packages/react/index.js',
-       './react-master/packages/shared/invariant.js',
-       './react-master/packages/shared/warningWithoutStack.js' ] },
+{
+   "rootNode":{
+      "fileName":"packages",
+      "filePath":"./react-master",
+      "type":"folder",
+      "leaves":[
+         {
+            "fileName":"create-subscription",
+            "filePath":"./react-master/packages",
+            "type":"folder",
+            "leaves":[
+               {
+                  "fileName":"index.js",
+                  "filePath":"./react-master/packages/create-subscription",
+                  "type":"file",
+                  "leaves":[
+
+                  ],
+                  "deps":[
+                     "./react-master/packages/create-subscription/src/createSubscription.js"
+                  ]
+               },
+// ...
 ```
 
 ## Run it
