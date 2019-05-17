@@ -40,8 +40,15 @@ function parse(lineCode) {
   }
 }
 
+// generate unique id
+function uniqueId() {
+    return Math.random().toString(36).replace('0.', '_');
+}
+
 module.exports = {
     fixPath: fixPath,
 
     parse: parse,
+
+    uniqueId: uniqueId,
 };

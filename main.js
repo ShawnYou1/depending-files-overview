@@ -12,19 +12,30 @@ function main() {
     // init a  empty file tree
     let fileTree = new Filetree();
 
+    // build id map to path or path to id
+    let pathToId = {};
+
     // build file path tree
-    recursivePath(config.ROOT_FOLDER, config.ROOT_PATH, fileTree);
+    recursiveFolder(config.ROOT_FOLDER, config.ROOT_PATH, fileTree, pathToId);
 
     // loop and build depending tree
     fileTree.loop((node) => {
+        let totalPath = `${node.filePath}/${node.fileName}`;
+
         if (node.type === 'file') {
-            let totalPath = `${node.filePath}/${node.fileName}`;
             let content = fs.readFileSync(totalPath, 'utf8');
-            node.deps = getAllModule(content, node.filePath + '/');
+            node.deps = getAllModule(content, node.filePath + '/', pathToId);
         }
     });
 
+    // clean the node filePath
+    fileTree.loop((node) => {
+        let folderQueen = node.filePath.split('/');
+        node.filePath = folderQueen[folderQueen.length - 1];
+    });
+
     console.log(JSON.stringify(fileTree));
+
     return ;
 }
 
@@ -33,23 +44,34 @@ function main() {
 // @_folder {String} folder's name
 // @aPath {String} a path like /folder1/subFolder2  /folder1/file1.js
 // @_fileTree {Filetree}
-function recursivePath(_folder, aPath, _fileTree) {
-    let node = new Node(_folder, aPath, 'folder');
+function recursiveFolder(_folder, aPath, _fileTree, pathToId) {
+
+    let node = new Node(utils.uniqueId(), _folder, aPath, 'folder');
     _fileTree.addNode(node);
 
     let folderTotalDir = `${aPath}/${_folder}`
-    let dirList = fs.readdirSync(folderTotalDir);
+
+    // convenient to convert
+    pathToId[node.id] = folderTotalDir;
+    pathToId[folderTotalDir] = node.id;
 
     let stats, newPath;
+    let dirList = fs.readdirSync(folderTotalDir);
     dirList.forEach((name) => {
         newPath = `${folderTotalDir}/${name}`;
         stats = fs.statSync(newPath);
         if (stats.isDirectory()) {
-            recursivePath(name, folderTotalDir, _fileTree);
+            recursiveFolder(name, folderTotalDir, _fileTree, pathToId);
         } else {
             if (/\.(js|ts)$/.test(name)) {
-                let node = new Node(name, folderTotalDir, 'file');
+                let node = new Node(utils.uniqueId(), name, folderTotalDir, 'file');
+
+                // remove leaves for file
+                delete node.leaves;
                 _fileTree.addNode(node);
+                // convenient to convert
+                pathToId[node.id] = folderTotalDir + '/' + name;
+                pathToId[folderTotalDir + '/' + name] = node.id;
             }
         }
     });
@@ -60,7 +82,7 @@ function recursivePath(_folder, aPath, _fileTree) {
 // @content {String} file's content
 // @currentPath {String} current file's path
 // @return {Array} all module path with root path
-function getAllModule(content, currentPath) {
+function getAllModule(content, currentPath, _pathToId) {
   let rt = [];
   let modulesPath = content.match(config.MODULE_PATH_REG);
 
@@ -68,8 +90,7 @@ function getAllModule(content, currentPath) {
     rt = modulesPath.map((str) => {
       let modulePath = utils.parse(str);
       let fixedPath = utils.fixPath(modulePath, currentPath);
-      // console.log('fixed', fixedPath);
-      return fixedPath;
+      return _pathToId[fixedPath];
     });
   }
 
