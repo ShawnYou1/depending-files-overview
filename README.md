@@ -2,7 +2,7 @@
 This Project is developed to let the programmer have an overview when they meet a new project.
 
 ## Example
-### React's files overview
+### React lib's files overview
 ```
 {
    "rootNode":{
