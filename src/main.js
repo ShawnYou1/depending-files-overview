@@ -15,13 +15,12 @@ function main() {
     // build file path tree
     recursiveFolder(config.ROOT_FOLDER, config.ROOT_PATH, fileTree, fileTree.pathToId);
 
-    // loop and build depending tree
+    // loop storing depending node's id
     fileTree.loop((node) => {
         let totalPath = `${node.filePath}/${node.fileName}`;
-
         if (node.type === 'file') {
             let content = fs.readFileSync(totalPath, 'utf8');
-            node.deps = getAllModule(content, node.filePath + '/', fileTree.pathToId);
+            node.deps = getDependingIds(content, node.filePath + '/', fileTree.pathToId);
         }
     });
 
@@ -32,6 +31,13 @@ function main() {
     });
 
     console.log(JSON.stringify(fileTree));
+
+    // build clean depending tree
+    // TODO
+
+
+    // draw relation diagram
+    // TODO
 
     return ;
 }
@@ -79,7 +85,7 @@ function recursiveFolder(_folder, aPath, _fileTree, _pathToId) {
 // @content {String} file's content
 // @currentPath {String} current file's path
 // @return {Array} all module path with root path
-function getAllModule(content, currentPath, _pathToId) {
+function getDependingIds(content, currentPath, _pathToId) {
   let rt = [];
   let modulesPath = content.match(config.MODULE_PATH_REG);
 
