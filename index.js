@@ -16,9 +16,9 @@ const RELATIVE_PATH_PREFIX_REG = /^\.\//;
 const MODULE_PATH_REG = /(export|import).+from\s+(['"])([\w\/\.\-\_]+)\2([^;])?/g;
 
 // node class
-// @id node unique id
-// @fileName file's name include extra
-// @filePath file's path
+// @fileName {String} file's name include extra
+// @filePath {String} file's path
+// @type {String} the value is 'file' or 'folder'
 function Node(fileName, filePath, type) {
 
     // basic info
@@ -33,7 +33,7 @@ function Node(fileName, filePath, type) {
     this.deps = [];
 }
 
-// Tree class
+// File Tree class
 function Filetree() {
     this.rootNode = null;
 }
@@ -98,8 +98,10 @@ function main() {
 }
 
 
-// recursion a path
+// recursion a folder
+// @_folder {String} folder's name
 // @aPath {String} a path like /folder1/subFolder2  /folder1/file1.js
+// @_fileTree {Filetree}
 function recursivePath(_folder, aPath, _fileTree) {
     let node = new Node(_folder, aPath, 'folder');
     _fileTree.addNode(node);
