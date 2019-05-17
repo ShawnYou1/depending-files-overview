@@ -6,24 +6,24 @@ This Project is developed to let the programmer have an overview when they meet 
 ```
 {
    "rootNode":{
+      "id":"_e8jou5zh15n",
       "fileName":"packages",
-      "filePath":"./react-master",
+      "filePath":"react-master",
       "type":"folder",
       "leaves":[
          {
+            "id":"_7f2dtf8xutg",
             "fileName":"create-subscription",
-            "filePath":"./react-master/packages",
+            "filePath":"packages",
             "type":"folder",
             "leaves":[
                {
+                  "id":"_jdzmf9wcgbs",
                   "fileName":"index.js",
-                  "filePath":"./react-master/packages/create-subscription",
+                  "filePath":"create-subscription",
                   "type":"file",
-                  "leaves":[
-
-                  ],
                   "deps":[
-                     "./react-master/packages/create-subscription/src/createSubscription.js"
+                     "_o516j8hnn8"
                   ]
                },
 // ...

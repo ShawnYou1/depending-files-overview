@@ -66,8 +66,8 @@ function recursiveFolder(_folder, aPath, _fileTree, pathToId) {
             if (/\.(js|ts)$/.test(name)) {
                 let node = new Node(utils.uniqueId(), name, folderTotalDir, 'file');
 
-                // remove leaves for file
-                delete node.leaves;
+                // let file node leaves equels null
+                node.leaves = null;
                 _fileTree.addNode(node);
                 // convenient to convert
                 pathToId[node.id] = folderTotalDir + '/' + name;
