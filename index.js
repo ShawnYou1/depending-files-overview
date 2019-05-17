@@ -2,58 +2,124 @@ const fs = require('fs');
 
 // use react as the debug
 // https://github.com/facebook/react/tree/master/packages
-const ROOT_PATH = './react-master/packages/';
+const ROOT_FOLDER = 'packages';
+const ROOT_PATH = './react-master';
 
 // if thereis a import path 'folder1/file1'
 // the completely path is ROOT_PATH + 'folder1/file1'
 // ofen config it by likeing webpack
-const CUSTOMER_ROOT_PATH = ROOT_PATH;
+const CUSTOMER_ROOT_PATH = ROOT_PATH + '/' + ROOT_FOLDER + '/';
 
 const RELATIVE_PATH_PREFIX_REG = /^\.\//;
 
 // a regex that match a line module
 const MODULE_PATH_REG = /(export|import).+from\s+(['"])([\w\/\.\-\_]+)\2([^;])?/g;
 
+// node class
+// @id node unique id
+// @fileName file's name include extra
+// @filePath file's path
+function Node(fileName, filePath, type) {
+
+    // basic info
+    this.fileName = fileName;
+    this.filePath = filePath;
+    this.type = type;
+
+    // lots of leaves
+    this.leaves = [];
+
+    // depend modules
+    this.deps = [];
+}
+
+// Tree class
+function Filetree() {
+    this.rootNode = null;
+}
+
+// add a node into the file tree by path
+// @node {Node}
+Filetree.prototype.addNode = function(node){
+    let eachFilePath;
+    if (!this.rootNode) {
+        this.rootNode = node;
+    } else {
+        this.loop((eachNode, index) => {
+            eachFilePath = `${eachNode.filePath}/${eachNode.fileName}`;
+            if (eachFilePath === node.filePath) {
+                eachNode.leaves.push(node);
+            }
+        });
+    }
+}
+
+// loop the file tree
+// @callback {Function} a callback function
+Filetree.prototype.loop = function(callback){
+    if (this.rootNode) {
+        Filetree.recursive(this.rootNode, callback);
+    }
+}
+
+// Filetree class static method recursive
+// @node {Node} a node
+// @callback {Function} a callback function
+Filetree.recursive = function(node, callback){
+    callback(node);
+    if (node.leaves && node.leaves.length > 0) {
+        node.leaves.forEach((leaf) => {
+            Filetree.recursive(leaf, callback);
+        });
+    }
+}
 
 main();
 
 function main() {
-    let filesPath = recursivePath(ROOT_PATH);
 
-    let filePathRelation = filesPath.map((item, index) => {
-        let totalPath = `${item.path}/${item.fileName}`;
-        let content = fs.readFileSync(totalPath, 'utf8');
-        item.from = getAllModule(content, item.path);
-        return item;
+    // init a  empty file tree
+    let fileTree = new Filetree();
+
+    // build file path tree
+    recursivePath(ROOT_FOLDER, ROOT_PATH, fileTree);
+
+    // loop and build depending tree
+    fileTree.loop((node) => {
+        if (node.type === 'file') {
+            let totalPath = `${node.filePath}/${node.fileName}`;
+            let content = fs.readFileSync(totalPath, 'utf8');
+            node.deps = getAllModule(content, node.filePath + '/');
+        }
     });
-    // console.log(filePathRelation);
 
-    // convert filePathRelation to a tree with depending relation
-    let treeDependRelation = convertPath2tree(filePathRelation);
-    console.log(treeDependRelation);
+    console.log(JSON.stringify(fileTree));
+    return ;
 }
+
 
 // recursion a path
 // @aPath {String} a path like /folder1/subFolder2  /folder1/file1.js
-function recursivePath(aPath, filesPath = []) {
-  let dirList = fs.readdirSync(aPath);
+function recursivePath(_folder, aPath, _fileTree) {
+    let node = new Node(_folder, aPath, 'folder');
+    _fileTree.addNode(node);
+
+    let folderTotalDir = `${aPath}/${_folder}`
+    let dirList = fs.readdirSync(folderTotalDir);
 
   let stats, newPath;
   dirList.forEach((name) => {
-    newPath = `${aPath}${name}`;
+    newPath = `${folderTotalDir}/${name}`;
     stats = fs.statSync(newPath);
     if (stats.isDirectory()) {
-      recursivePath(`${newPath}/`, filesPath);
+        recursivePath(name, folderTotalDir, _fileTree);
     } else {
       if (/\.(js|ts)$/.test(name)) {
-        filesPath.push({
-          fileName: name,
-          path: aPath,
-        });
+        let node = new Node(name, folderTotalDir, 'file');
+        _fileTree.addNode(node);
       }
     }
   });
-  return filesPath;
 }
 
 
@@ -113,63 +179,4 @@ function fixPath(relativePath, currentPath) {
   }
 
   return rt;
-}
-
-// @filePathRelation {Object} example:  {name : 'file.js', path: 'a/b/', from: []}
-// @return {Object} like a tree
-function convertPath2tree(filePathRelation) {
-    let tree = {};
-
-    // build basic tree
-    filePathRelation.forEach((item, index) => {
-        let filePath = `${item.path}${item.fileName}`
-        let leafNode = recursiveOnePath(tree, filePath);
-        item.treeNode = leafNode;
-    });
-
-    // console.log(22, JSON.stringify(tree));
-
-    // build node depend on relation
-    filePathRelation.forEach((item, index) => {
-        item.treeNode['depending'] = [];
-        item.from.forEach((dependPath, subIndex) => {
-            let dependNode = findByPath(dependPath, tree);
-            item.treeNode['depending'].push(dependNode);
-        });
-     });
-
-    return tree;
-}
-
-// @root {Object} tree
-// @onePathArr {String} a file path
-// example:
-// ./a/b/c/d.js => {a: {b: {c: {"d.js": {}}}}}
-// ./a/b/c/e.js => {a: {b: {c: {"d.js": {}, "e".js:{}}}}}
-function recursiveOnePath(root, filePath) {
-    let onePathArr = filePath.split('/');
-    let leaf = root;
-    onePathArr.forEach((fName, index) => {
-        if (!leaf[fName]) {
-            leaf[fName] = {};
-        }
-        leaf = leaf[fName];
-    });
-    return leaf;
-}
-
-// find node by path
-// @path {String} a path
-// @return {Object} return the path's object
-function findByPath(filePath, tree) {
-    let onePathArr = filePath.split('/');
-
-    let tempPoint = tree;
-    onePathArr.forEach((fName) => {
-        if (tempPoint[fName]) {
-            tempPoint = tempPoint[fName];
-        }
-    });
-
-    return tempPoint;
 }
