@@ -12,11 +12,8 @@ function main() {
     // init a  empty file tree
     let fileTree = new Filetree();
 
-    // build id map to path or path to id
-    let pathToId = {};
-
     // build file path tree
-    recursiveFolder(config.ROOT_FOLDER, config.ROOT_PATH, fileTree, pathToId);
+    recursiveFolder(config.ROOT_FOLDER, config.ROOT_PATH, fileTree, fileTree.pathToId);
 
     // loop and build depending tree
     fileTree.loop((node) => {
@@ -24,7 +21,7 @@ function main() {
 
         if (node.type === 'file') {
             let content = fs.readFileSync(totalPath, 'utf8');
-            node.deps = getAllModule(content, node.filePath + '/', pathToId);
+            node.deps = getAllModule(content, node.filePath + '/', fileTree.pathToId);
         }
     });
 
@@ -44,7 +41,7 @@ function main() {
 // @_folder {String} folder's name
 // @aPath {String} a path like /folder1/subFolder2  /folder1/file1.js
 // @_fileTree {Filetree}
-function recursiveFolder(_folder, aPath, _fileTree, pathToId) {
+function recursiveFolder(_folder, aPath, _fileTree, _pathToId) {
 
     let node = new Node(utils.uniqueId(), _folder, aPath, 'folder');
     _fileTree.addNode(node);
@@ -52,8 +49,8 @@ function recursiveFolder(_folder, aPath, _fileTree, pathToId) {
     let folderTotalDir = `${aPath}/${_folder}`
 
     // convenient to convert
-    pathToId[node.id] = folderTotalDir;
-    pathToId[folderTotalDir] = node.id;
+    _pathToId[node.id] = folderTotalDir;
+    _pathToId[folderTotalDir] = node.id;
 
     let stats, newPath;
     let dirList = fs.readdirSync(folderTotalDir);
@@ -61,7 +58,7 @@ function recursiveFolder(_folder, aPath, _fileTree, pathToId) {
         newPath = `${folderTotalDir}/${name}`;
         stats = fs.statSync(newPath);
         if (stats.isDirectory()) {
-            recursiveFolder(name, folderTotalDir, _fileTree, pathToId);
+            recursiveFolder(name, folderTotalDir, _fileTree, _pathToId);
         } else {
             if (/\.(js|ts)$/.test(name)) {
                 let node = new Node(utils.uniqueId(), name, folderTotalDir, 'file');
@@ -70,8 +67,8 @@ function recursiveFolder(_folder, aPath, _fileTree, pathToId) {
                 node.leaves = null;
                 _fileTree.addNode(node);
                 // convenient to convert
-                pathToId[node.id] = folderTotalDir + '/' + name;
-                pathToId[folderTotalDir + '/' + name] = node.id;
+                _pathToId[node.id] = folderTotalDir + '/' + name;
+                _pathToId[folderTotalDir + '/' + name] = node.id;
             }
         }
     });

@@ -1,6 +1,10 @@
 // File Tree class
 function Filetree() {
     this.rootNode = null;
+
+    // convert path to id or id to path
+    // a map table {id: path, path: id}
+    this.pathToId = {};
 }
 
 // add a node into the file tree by path
