@@ -12,6 +12,7 @@ Filetree.prototype.addNode = function(node){
     } else {
         this.loop((eachNode, index) => {
             eachFilePath = `${eachNode.filePath}/${eachNode.fileName}`;
+            // if node's path equels the node's file path of the tree as the child
             if (eachFilePath === node.filePath) {
                 eachNode.leaves.push(node);
             }

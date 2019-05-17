@@ -30,7 +30,7 @@ This Project is developed to let the programmer have an overview when they meet 
 ```
 
 ## Run it
-`node index.js`
+`node main.js`
 
 ## About the Author
 [Shawn You](https://youshaohua.com)
