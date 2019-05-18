@@ -30,7 +30,10 @@ This Project is developed to let the programmer have an overview when they meet 
 ```
 
 ## Run it
-`node main.js`
+```
+cd src
+node main.js
+```
 
 ## About the Author
 [Shawn You](https://youshaohua.com)
