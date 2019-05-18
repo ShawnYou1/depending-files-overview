@@ -9,34 +9,57 @@ main();
 
 function main() {
 
-    // init a  empty file tree
-    let fileTree = new Filetree();
-
     // build file path tree
-    recursiveFolder(config.ROOT_FOLDER, config.ROOT_PATH, fileTree, fileTree.pathToId);
+    let fileTree = buildFilePathTree();
 
+    // clean the fileTree
+    let cleaningFileTree = cleanBuildFileTree(fileTree);
+
+
+    console.log(JSON.stringify(cleaningFileTree));
+
+    // build depending tree
+    let depengingTree = buildDependingTree(cleaningFileTree);
+
+
+    // draw relation diagram
+    // TODO
+
+}
+
+// build file path tree
+// @return {Filetree}
+function buildFilePathTree() {
+    return recursiveFolder(config.ROOT_FOLDER, config.ROOT_PATH, new Filetree());
+}
+
+// clean the build file tree
+// @_fileTree {Filetree}
+// @return {Filetree}
+function cleanBuildFileTree(_fileTree) {
     // loop storing depending node's id
-    fileTree.loop((node) => {
+    // deps: ['a/b/c', ...] => ['_id', ...]
+    _fileTree.loop((node) => {
         let totalPath = `${node.filePath}/${node.fileName}`;
         if (node.type === 'file') {
             let content = fs.readFileSync(totalPath, 'utf8');
-            node.deps = getDependingIds(content, node.filePath + '/', fileTree.pathToId);
+            node.deps = getDependingIds(content, node.filePath + '/', _fileTree.pathToId);
         }
     });
 
-    // clean the node filePath
-    fileTree.loop((node) => {
+    // filePath: './a/b/c' => 'c' only left name c
+    _fileTree.loop((node) => {
         let folderQueen = node.filePath.split('/');
         node.filePath = folderQueen[folderQueen.length - 1];
     });
 
-    console.log(JSON.stringify(fileTree));
+    return _fileTree;
+}
 
-    // build clean depending tree
-    // TODO
-
-
-    // draw relation diagram
+// build depenging file tree
+// @_cleaningFileTree {Filetree}
+// @return
+function buildDependingTree(_cleaningFileTree) {
     // TODO
 
     return ;
@@ -47,7 +70,7 @@ function main() {
 // @_folder {String} folder's name
 // @aPath {String} a path like /folder1/subFolder2  /folder1/file1.js
 // @_fileTree {Filetree}
-function recursiveFolder(_folder, aPath, _fileTree, _pathToId) {
+function recursiveFolder(_folder, aPath, _fileTree) {
 
     let node = new Node(utils.uniqueId(), _folder, aPath, 'folder');
     _fileTree.addNode(node);
@@ -55,8 +78,8 @@ function recursiveFolder(_folder, aPath, _fileTree, _pathToId) {
     let folderTotalDir = `${aPath}/${_folder}`
 
     // convenient to convert
-    _pathToId[node.id] = folderTotalDir;
-    _pathToId[folderTotalDir] = node.id;
+    _fileTree.pathToId[node.id] = folderTotalDir;
+    _fileTree.pathToId[folderTotalDir] = node.id;
 
     let stats, newPath;
     let dirList = fs.readdirSync(folderTotalDir);
@@ -64,7 +87,7 @@ function recursiveFolder(_folder, aPath, _fileTree, _pathToId) {
         newPath = `${folderTotalDir}/${name}`;
         stats = fs.statSync(newPath);
         if (stats.isDirectory()) {
-            recursiveFolder(name, folderTotalDir, _fileTree, _pathToId);
+            recursiveFolder(name, folderTotalDir, _fileTree);
         } else {
             if (/\.(js|ts)$/.test(name)) {
                 let node = new Node(utils.uniqueId(), name, folderTotalDir, 'file');
@@ -73,11 +96,12 @@ function recursiveFolder(_folder, aPath, _fileTree, _pathToId) {
                 node.leaves = null;
                 _fileTree.addNode(node);
                 // convenient to convert
-                _pathToId[node.id] = folderTotalDir + '/' + name;
-                _pathToId[folderTotalDir + '/' + name] = node.id;
+                _fileTree.pathToId[node.id] = folderTotalDir + '/' + name;
+                _fileTree.pathToId[folderTotalDir + '/' + name] = node.id;
             }
         }
     });
+    return _fileTree;
 }
 
 
