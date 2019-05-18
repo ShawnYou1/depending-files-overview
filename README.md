@@ -32,6 +32,8 @@ This Project is developed to let the programmer have an overview when they meet 
 ## Run it
 ```
 cd src
+wegt https://github.com/facebook/react/archive/master.zip
+unzip master.zip
 node main.js
 ```
 
