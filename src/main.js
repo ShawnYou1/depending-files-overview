@@ -12,15 +12,13 @@ function main() {
     // build file path tree
     let fileTree = buildFilePathTree();
 
-    // clean the fileTree
-    let cleaningFileTree = cleanBuildFileTree(fileTree);
-
-
-    console.log(JSON.stringify(cleaningFileTree));
-
     // build depending tree
-    let depengingTree = buildDependingTree(cleaningFileTree);
+    let depengingTree = buildDependingTree(fileTree);
 
+    // clean the fileTree
+    let cleaningDependingTree = cleanBuildFileTree(fileTree);
+
+    console.log(JSON.stringify(cleaningDependingTree.rootNode));
 
     // draw relation diagram
     // TODO
@@ -37,20 +35,8 @@ function buildFilePathTree() {
 // @_fileTree {Filetree}
 // @return {Filetree}
 function cleanBuildFileTree(_fileTree) {
-    // loop storing depending node's id
-    // deps: ['a/b/c', ...] => ['_id', ...]
     _fileTree.loop((node) => {
-        let totalPath = `${node.filePath}/${node.fileName}`;
-        if (node.type === 'file') {
-            let content = fs.readFileSync(totalPath, 'utf8');
-            node.deps = getDependingIds(content, node.filePath + '/', _fileTree.pathToId);
-        }
-    });
-
-    // filePath: './a/b/c' => 'c' only left name c
-    _fileTree.loop((node) => {
-        let folderQueen = node.filePath.split('/');
-        node.filePath = folderQueen[folderQueen.length - 1];
+        delete node.filePath;
     });
 
     return _fileTree;
@@ -58,11 +44,20 @@ function cleanBuildFileTree(_fileTree) {
 
 // build depenging file tree
 // @_cleaningFileTree {Filetree}
-// @return
-function buildDependingTree(_cleaningFileTree) {
-    // TODO
+// @return {Filetree}
+function buildDependingTree(_fileTree) {
+    // loop storing depending node's id
+    // deps: ['a/b/c', ...] => ['_id', ...]
+    _fileTree.loop((node) => {
+        let totalPath = `${node.filePath}/${node.fName}`;
+        // no leaves indicate it just a file
+        if (node.leaves === null) {
+            let content = fs.readFileSync(totalPath, 'utf8');
+            node.deps = getDependingIds(content, node.filePath + '/', _fileTree.pathToId);
+        }
+    });
 
-    return ;
+    return _fileTree;
 }
 
 
@@ -72,7 +67,7 @@ function buildDependingTree(_cleaningFileTree) {
 // @_fileTree {Filetree}
 function recursiveFolder(_folder, aPath, _fileTree) {
 
-    let node = new Node(utils.uniqueId(), _folder, aPath, 'folder');
+    let node = new Node(utils.uniqueId(), _folder, aPath);
     _fileTree.addNode(node);
 
     let folderTotalDir = `${aPath}/${_folder}`
@@ -90,7 +85,7 @@ function recursiveFolder(_folder, aPath, _fileTree) {
             recursiveFolder(name, folderTotalDir, _fileTree);
         } else {
             if (/\.(js|ts)$/.test(name)) {
-                let node = new Node(utils.uniqueId(), name, folderTotalDir, 'file');
+                let node = new Node(utils.uniqueId(), name, folderTotalDir);
 
                 // let file node leaves equels null
                 node.leaves = null;

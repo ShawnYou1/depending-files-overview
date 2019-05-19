@@ -1,16 +1,14 @@
 
 // node class
 // @id {String} unique id to sign a node
-// @fileName {String} file's name include extra
+// @fName {String} folder or file name, so it named fName
 // @filePath {String} file's path
-// @type {String} the value is 'file' or 'folder'
-function Node(id, fileName, filePath, type) {
+function Node(id, fName, filePath) {
 
     // basic info
     this.id = id;
-    this.fileName = fileName;
+    this.fName = fName;
     this.filePath = filePath;
-    this.type = type;
 
     // lots of leaves
     this.leaves = [];
