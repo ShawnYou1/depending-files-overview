@@ -9,16 +9,16 @@ function Filetree() {
 
 // add a node into the file tree by path
 // @node {Node}
-Filetree.prototype.addNode = function(node){
+Filetree.prototype.addNode = function(newNode){
     let eachFilePath;
     if (!this.rootNode) {
-        this.rootNode = node;
+        this.rootNode = newNode;
     } else {
         this.loop((eachNode, index) => {
             eachFilePath = `${eachNode.filePath}/${eachNode.fName}`;
-            // if node's path equels the node's file path of the tree as the child
-            if (eachFilePath === node.filePath) {
-                eachNode.leaves.push(node);
+            // if newNode's path equals one's path of the tree
+            if (eachFilePath === newNode.filePath) {
+                eachNode.leaves.push(newNode);
             }
         });
     }
