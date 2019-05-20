@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 
-cd src
+cd src;
 
-rm master.zip
-wget https://github.com/facebook/react/archive/master.zip
+# check if file exist
+if [ -d "react-master" ]; then
+    node main.js
+else
+    if [ -f master.zip ]; then
+        unzip master.zip
+    else
+        wget https://github.com/facebook/react/archive/master.zip
+        unzip master.zip
+    fi
+    node main.js
+fi
 
-rm -rf react-master
-unzip master.zip
 
-node main.js
 
