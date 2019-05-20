@@ -18,11 +18,16 @@ function main() {
     // clean the fileTree
     let cleaningDependingTree = cleanBuildFileTree(fileTree);
 
-    console.log(JSON.stringify(cleaningDependingTree.rootNode));
-
-    // draw relation diagram
-    // TODO
-
+    // write data to ./overview/data.js
+    let dtreeStr = JSON.stringify(cleaningDependingTree.rootNode);
+    let codeStr = `
+        (function(global){
+            global.data = ${dtreeStr}
+        })(window);
+    `
+    //console.log(config.DATA_PATH);
+    const fd = fs.openSync(config.DATA_PATH, 'w');
+    fs.writeSync(fd, codeStr);
 }
 
 // build file path tree

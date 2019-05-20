@@ -13,6 +13,9 @@ const RELATIVE_PATH_PREFIX_REG = /^\.\//;
 // a regex that match a line module
 const MODULE_PATH_REG = /(export|import).+from\s+(['"])([\w\/\.\-\_]+)\2([^;])?/g;
 
+// depending relation data file path
+const DATA_PATH = './overview/data.js';
+
 module.exports = {
     ROOT_FOLDER: ROOT_FOLDER,
 
@@ -23,4 +26,6 @@ module.exports = {
     RELATIVE_PATH_PREFIX_REG: RELATIVE_PATH_PREFIX_REG,
 
     MODULE_PATH_REG: MODULE_PATH_REG,
+
+    DATA_PATH: DATA_PATH,
 };
