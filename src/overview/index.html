@@ -9,7 +9,8 @@
             padding: 0;
         } 
         .wraper{
-        
+            box-sizing: border-box;
+            padding: 10px;
         }
         .wraper > section{
             width: 33.33333%; 
@@ -22,19 +23,19 @@
             background-color: #fff;
         }
         .ftree{
-            padding-left: 10px; 
         }
         .ftree img{
             width: 20px; 
             margin-right: 5px;
+            margin-left: 10px;
             vertical-align: middle;
         }
         ul, li {
             list-style: none; 
         }
         li{
-            margin: 10px auto; 
-            padding-bottom: 10px;
+            height: 30px;
+            line-height: 30px;
             border-bottom: 1px dotted #eca1a1;
         }
         </style>
@@ -43,9 +44,10 @@
     <body>
         <div class="wraper">
             <section class="ftree depending_tree"></section>
-            <section class="lines"></section>
+            <section class="lines" id="drawing"></section>
             <section class="ftree current_tree"></section>
         </div>
+        <script src="./svg.min.js"></script>
         <script src="./data.js"></script>
         <script src="./draw.js"></script>
     </body>
