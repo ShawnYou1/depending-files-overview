@@ -24,8 +24,73 @@ function main() {
     treeDataInit(cloneTreeData, mapTree);
 
     console.log(cloneTreeData);
+
+    render();
 }
 
+// render file and folder tree and svg link lines
+function render(){
+
+    // render depending folder and file tree
+    renderTree(dependingTreeDom);
+
+    // render current folder and file tree
+    renderTree(currentTreeDom);
+
+    drawLines();
+}
+
+// render current file and folder tree
+function renderTree(rootDom) {
+    let ulDom = document.createElement('ul');
+    let treeDom = recursiveDomTree(cloneTreeData, ulDom);
+    rootDom.appendChild(treeDom);
+}
+
+// render current file and folder tree
+function recursiveDomTree(cloneTreeData, dom){
+
+    if (!cloneTreeData) {
+        return ;
+    }
+    cloneTreeData.leaves.forEach((node) => {
+        let childDom = appendElement(dom, 'li', {});
+        childDom.setAttribute('data-id', node.id);
+        childDom.innerHTML = `<img src="./images/file.png" />${node.fName}`;
+
+        if (Array.isArray(node.leaves) && node.leaves.length > 0) {
+            childDom.innerHTML = `<img src="./images/folder.png" />${node.fName}`;
+            let ulDom = appendElement(childDom, 'ul', {'margin-left': '20px', 'display': 'none'});
+            return recursiveDomTree(node, ulDom);
+        }
+    });
+
+    return dom;
+}
+
+// append a element
+// @parentDom {DOM} parent dom
+// @ele {String} the dom tagName
+// @styleObj {Object} css style object
+// @return {DOM} new ul dom
+function appendElement (parentDom, ele, styleObj) {
+    let element = document.createElement(ele);
+
+    if (styleObj) {
+        let cssText = '';
+        for (let pro in styleObj) {
+            cssText += `${pro}:${styleObj[pro]};`
+        }
+        element.style.cssText = cssText;
+    }
+    parentDom.appendChild(element);
+    return element;
+}
+
+// draw lines to link from depending tree to current tree
+function drawLines(){
+
+}
 
 // handle tree data
 // @cloneTreeData {Object} the variable cloneTreeData
@@ -43,6 +108,11 @@ function treeDataInit(cloneTreeData, mapTree) {
         // parent attribute refers to parent node
         // build a double linked
         node.parent = parentNode;
+
+        // the folder node's default type is closed;
+        if (Array.isArray(node.leaves)) {
+            node.type = 'closed';
+        }
     });
 }
 
