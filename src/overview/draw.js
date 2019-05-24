@@ -23,7 +23,7 @@ function main() {
     // handle tree data
     treeDataInit(cloneTreeData, mapTree);
 
-    console.log(mapTree);
+    console.log(cloneTreeData);
 }
 
 
@@ -31,6 +31,11 @@ function main() {
 // @cloneTreeData {Object} the variable cloneTreeData
 // @mapTree {Object} the variable mapTree
 function treeDataInit(cloneTreeData, mapTree) {
+
+    if (!cloneTreeData) {
+        throw new Error('cloneTreeData is undefined');
+    }
+
     loopData(cloneTreeData, (node, parentNode) => {
         // id map to node to quickly access
         mapTree[node.id] = node;
@@ -45,12 +50,22 @@ function treeDataInit(cloneTreeData, mapTree) {
 // @treeData {Object} it is a tree
 // @callback {Function} a callback function
 function loopData(treeData, callback ) {
-    treeData.leaves.forEach((child) => {
-        callback(child, treeData);
-        if (child.leaves) {
-            loopData(child, callback);
-        }
-    });
+
+    if (!treeData) {
+        return ;
+    }
+
+    if (Array.isArray(treeData.leaves)) {
+        treeData.leaves.forEach((child) => {
+            callback && callback(child, treeData);
+            if (child.leaves) {
+                loopData(child, callback);
+            }
+        });
+    } else {
+        // default parent node's null
+        callback && callback(treeData, null);
+    }
 }
 
 })(window, document);
