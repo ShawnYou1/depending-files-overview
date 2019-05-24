@@ -8,11 +8,27 @@
             margin: 0;
             padding: 0;
         } 
+        .wraper{
+        
+        }
+        .wraper > section{
+            width: 33.33333%; 
+            min-height: 100px;
+            background-color: #dfdfdf;
+            float: left;
+        }
+        .wraper .lines{
+            background-color: #fff;
+        }
         </style>
     </head>
 
     <body>
-        file overview
+        <div class="wraper">
+            <section class="ftree depending_tree"></section>
+            <section class="lines"></section>
+            <section class="ftree current_tree"></section>
+        </div>
         <script src="./data.js"></script>
         <script src="./draw.js"></script>
     </body>

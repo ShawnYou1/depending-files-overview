@@ -3,16 +3,54 @@
 // the right column is the left's direction, the line represent they have relation,
 // the middle line thickness indicates that both files have a high relation or low relation,
 // sub file show relation when expand a folder
-(function(global, doc, utils){
-    // the depending file relation data
-    console.log(global.data);
+(function(global, doc){
 
-})(window, document, (function(){
-    // some util methods
+// the depending file relation data
+console.log(global.data);
+let cloneTreeData = JSON.parse(JSON.stringify(global.data));
+let mapTree = {};
+
+// basic most common variable
+let dependingTreeDom = document.querySelector('.depending_tree');
+let currentTreeDom = document.querySelector('.current_tree');
+let mapLinesDom = document.querySelector('.lines');
+
+main();
+
+// the program main method
+function main() {
+
+    // handle tree data
+    treeDataInit(cloneTreeData, mapTree);
+
+    console.log(mapTree);
+}
 
 
+// handle tree data
+// @cloneTreeData {Object} the variable cloneTreeData
+// @mapTree {Object} the variable mapTree
+function treeDataInit(cloneTreeData, mapTree) {
+    loopData(cloneTreeData, (node, parentNode) => {
+        // id map to node to quickly access
+        mapTree[node.id] = node;
 
-    return {
+        // parent attribute refers to parent node
+        // build a double linked
+        node.parent = parentNode;
+    });
+}
 
-    };
-})());
+// loop every node by recursion
+// @treeData {Object} it is a tree
+// @callback {Function} a callback function
+function loopData(treeData, callback ) {
+    treeData.leaves.forEach((child) => {
+        callback(child, treeData);
+        if (child.leaves) {
+            loopData(child, callback);
+        }
+    });
+}
+
+})(window, document);
