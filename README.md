@@ -1,5 +1,8 @@
 # Depending Files Overview 
-This Project is developed to let the programmer have an overview when they meet a new project.
+Code file depending analysis. Let you have an overview.
+
+## Background
+I want to know more about React library. But lots of folders and files. So I want to know about those files relation. That makes me develop this tool.
 
 ## Example
 ### React lib's files overview
