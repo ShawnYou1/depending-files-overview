@@ -2,7 +2,7 @@
 Code file depending analysis. Let you have an overview.
 
 ## Background
-I want to know more about React library. But lots of folders and files. So I want to know about those files relation. That makes me develop this tool.
+I want to know more about React library. But lots of folders and files. That makes me have an idea that analyze the file depending relation. So I developed this tool.
 
 ## Example
 ### React lib's files overview
