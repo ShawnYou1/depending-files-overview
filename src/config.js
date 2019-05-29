@@ -11,7 +11,8 @@ const CUSTOMER_ROOT_PATH = ROOT_PATH + '/' + ROOT_FOLDER + '/';
 const RELATIVE_PATH_PREFIX_REG = /^\.\//;
 
 // a regex that match a line module
-const MODULE_PATH_REG = /(export|import).+from\s+(['"])([\w\/\.\-\_]+)\2([^;])?/g;
+const MODULE_ES6_PATH_REG = /(export|import).+from\s+(['"])([\w\/\.\-]+)\2([^;])?/g;
+const MODULE_COMMONJS_PATH_REG = /(require)\((['"])([\w\/\.\-]+)\2\)([^;])?/g;
 
 // depending relation data file path
 const DATA_PATH = './overview/data.js';
@@ -25,7 +26,9 @@ module.exports = {
 
     RELATIVE_PATH_PREFIX_REG: RELATIVE_PATH_PREFIX_REG,
 
-    MODULE_PATH_REG: MODULE_PATH_REG,
+    MODULE_ES6_PATH_REG: MODULE_ES6_PATH_REG,
+
+    MODULE_COMMONJS_PATH_REG: MODULE_COMMONJS_PATH_REG,
 
     DATA_PATH: DATA_PATH,
 };

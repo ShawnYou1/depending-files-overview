@@ -111,7 +111,11 @@ function recursiveFolder(_folder, aPath, _fileTree) {
 // @return {Array} all module path with root path
 function getDependingIds(content, currentPath, _pathToId) {
   let rt = [];
-  let modulesPath = content.match(config.MODULE_PATH_REG);
+  let modulesPath = content.match(config.MODULE_ES6_PATH_REG) || [];
+  let commonjsModule = content.match(config.MODULE_COMMONJS_PATH_REG);
+  if (Array.isArray(commonjsModule)) {
+    modulesPath = modulesPath.concat(commonjsModule);
+  }
 
   if (Array.isArray(modulesPath)) {
     rt = modulesPath.map((str) => {
