@@ -63,7 +63,6 @@ function bindEvent(){
 
     domDepending.addEventListener('click', clickCallback, false);
     domCurrent.addEventListener('click', clickCallback, false);
-
 }
 
 // click event callback
@@ -72,8 +71,8 @@ function clickCallback(eve) {
     let target = eve.target;
     let uldom = target.querySelector('ul');
     if (target.tagName.toUpperCase() === 'LI' && uldom) {
-        let id = uldom.getAttribute('data-id');
-        let dtype = uldom.getAttribute('data-dtype');
+        let id = target.getAttribute('data-id');
+        let dtype = target.getAttribute('data-dtype');
         let newClassName = '';
         if (uldom.className === 'fold') {
             newClassName = 'expand';
@@ -81,6 +80,7 @@ function clickCallback(eve) {
             newClassName = 'fold';
         }
         uldom.className = newClassName;
+        target.className = newClassName + '_';
 
         let treeData;
         if (dtype === 'depend') {
@@ -94,7 +94,6 @@ function clickCallback(eve) {
             }
         });
         refreshDiagram();
-
     }
 }
 
@@ -196,7 +195,7 @@ function recursiveDomTree(treeData, dom){
         childDom.setAttribute('data-dtype', node.dtype);
         childDom.innerHTML = `<img src="./images/file.png" />${node.fName}`;
         if (Array.isArray(node.leaves) && node.leaves.length > 0) {
-            childDom.innerHTML = `<img src="./images/folder.png" />${node.fName}`;
+            childDom.innerHTML = `<span class="icon-x"></span>${node.fName}`;
             let ulDom = appendElement(childDom, 'ul', {'margin-left': '20px'});
             ulDom.className = node.className || '';
             return recursiveDomTree(node, ulDom);
