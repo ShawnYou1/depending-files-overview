@@ -7,9 +7,15 @@
 
 // the depending file relation data
 console.log(global.data);
+
+// depending tree
 let cloneTreeData = JSON.parse(JSON.stringify(global.data));
 let mapTree = {};
 let showDependingNode = {};
+
+// current tree
+let cloneTreeDataCurrent = JSON.parse(JSON.stringify(global.data));
+let mapTreeCurrent = {};
 let showCurrentNode = {};
 
 // basic most common variable
@@ -22,20 +28,36 @@ main();
 // the program main method
 function main() {
 
-    // handle tree data
-    treeDataInit(cloneTreeData, mapTree);
-
+    // handle tree data for depending
+    let dependingTreeData = treeDataInit(cloneTreeData, mapTree);
     // render depending folder and file tree
-    renderTree(dependingTreeDom);
+    renderTree(dependingTreeDom, dependingTreeData);
 
+    // handle tree data for current
+    let currentTreeData = treeDataInit(cloneTreeDataCurrent, mapTreeCurrent);
     // render current folder and file tree
-    renderTree(currentTreeDom);
-    console.log(cloneTreeData);
+    renderTree(currentTreeDom, currentTreeData);
 
-    // calculate depending weight
+    // calculate depending weight and draw diagram
+    let showDependingNode = getShowingId(cloneTreeData);
+    let showCurrentNode = getShowingId(cloneTreeDataCurrent);
     calDepsWeight(showDependingNode, showCurrentNode);
-
     drawLines(showDependingNode, showCurrentNode);
+}
+
+// filter showing node id
+function getShowingId(treeData) {
+    let showIds = {};
+    loopData(treeData, (item) => {
+        // if a foler expanded will do not drawline
+        if (item.className === 'fold' && item.parent.className === 'expand') {
+            showIds[item.id]  = {};
+        }
+        if (/\.(js|ts)$/.test(item.fName) && item.parent.className === 'expand') {
+            showIds[item.id]  = {};
+        }
+    });
+    return showIds;
 }
 
 // calculate weight based on currently showing node
@@ -93,30 +115,27 @@ function recursiveParent(node, callback) {
 
 
 // render current file and folder tree
-function renderTree(rootDom) {
+function renderTree(rootDom, treeData) {
     let ulDom = doc.createElement('ul');
-    let treeDom = recursiveDomTree(cloneTreeData, ulDom);
+    ulDom.className = treeData.className;
+    let treeDom = recursiveDomTree(treeData, ulDom);
     rootDom.appendChild(treeDom);
 }
 
 // render current file and folder tree
-function recursiveDomTree(cloneTreeData, dom){
+function recursiveDomTree(treeData, dom){
 
-    if (!cloneTreeData) {
+    if (!treeData) {
         return ;
     }
-    cloneTreeData.leaves.forEach((node) => {
+    treeData.leaves.forEach((node) => {
         let childDom = appendElement(dom, 'li', {});
         childDom.setAttribute('data-id', node.id);
         childDom.innerHTML = `<img src="./images/file.png" />${node.fName}`;
-        if (node.level === 0) {
-            showDependingNode[node.id] = {};
-            showCurrentNode[node.id] = {};
-        }
-
         if (Array.isArray(node.leaves) && node.leaves.length > 0) {
             childDom.innerHTML = `<img src="./images/folder.png" />${node.fName}`;
-            let ulDom = appendElement(childDom, 'ul', {'margin-left': '20px', 'display': 'none'});
+            let ulDom = appendElement(childDom, 'ul', {'margin-left': '20px'});
+            ulDom.className = node.className || '';
             return recursiveDomTree(node, ulDom);
         }
     });
@@ -144,7 +163,7 @@ function appendElement (parentDom, ele, styleObj) {
 }
 
 // draw lines to link from depending tree to current tree
-function drawLines(showDependingNode){
+function drawLines(showDependingNode, showCurrentNode){
 
     let  draw = SVG('drawing').size(currentTreeDom.clientWidth, currentTreeDom.clientHeight);
     Object.keys(showDependingNode).forEach((id)=>{
@@ -163,7 +182,6 @@ function drawLines(showDependingNode){
                 x: currentTreeDom.clientWidth,
                 y: dom.offsetTop + 15 - 10,
             }
-            console.log(mapTree[refId], dom, endPosition);
             draw.polyline([[0, startPosition.y], [endPosition.x, endPosition.y]])
             .stroke({ width:  bolderStroke})
         });
@@ -172,15 +190,16 @@ function drawLines(showDependingNode){
 }
 
 // handle tree data
-// @cloneTreeData {Object} the variable cloneTreeData
+// @treeData {Object} the variable cloneTreeData or cloneTreeDataCurrent
 // @mapTree {Object} the variable mapTree
-function treeDataInit(cloneTreeData, mapTree) {
+function treeDataInit(treeData, mapTree) {
 
-    if (!cloneTreeData) {
-        throw new Error('cloneTreeData is undefined');
+    if (!treeData) {
+        throw new Error('treeData is undefined');
     }
+    treeData.className = 'expand';
 
-    loopData(cloneTreeData, (node, parentNode) => {
+    loopData(treeData, (node, parentNode) => {
         // id map to node to quickly access
         mapTree[node.id] = node;
 
@@ -188,11 +207,16 @@ function treeDataInit(cloneTreeData, mapTree) {
         // build a double linked
         node.parent = parentNode;
 
-        // the folder node's default type is closed;
-        if (Array.isArray(node.leaves)) {
-            node.type = 'closed';
+        // the level 0 default expand
+        if (Array.isArray(node.leaves) && node.leaves.length >= 0) {
+            node.className = 'fold';
+        }
+        // TODO: remove the test
+        if (['_n6q24ejo8r8', '_z484fh6n7dj'].includes(node.id)) {
+            node.className = 'expand';
         }
     }, 0);
+    return treeData;
 }
 
 // loop every node by recursion
