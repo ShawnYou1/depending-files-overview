@@ -14,9 +14,15 @@ I want to know more about React library. But lots of folders and files. That mak
 ### React lib's files overview
 ![alt React relation screenshoot](https://raw.githubusercontent.com/ShawnYou1/depending-files-overview/master/src/overview/images/screenshoot.jpg)
 
+## Environment
+NodeJS v10+
+
 ## Run it
 ```
+# run start.sh
 sh start.sh
+
+# Open src/overview/index.html by Chrome
 ```
 
 ## About the Author
