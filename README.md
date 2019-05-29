@@ -1,6 +1,11 @@
 # Depending Files Overview 
 Code file depending analysis. Let you have an overview of your projects.  
-Support ES6 module analysis.
+
+## Support Module Protocol
+| Module Name|
+|---|
+| ES6 |
+|CommonJS|
 
 ## Background
 I want to know more about React library. But lots of folders and files. That makes me have an idea that analyze the file depending relation. So I developed this tool.
