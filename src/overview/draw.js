@@ -23,21 +23,31 @@ let dependingTreeDom = doc.querySelector('.depending_tree');
 let currentTreeDom = doc.querySelector('.current_tree');
 let mapLinesDom = doc.querySelector('.lines');
 
+let svgCanvas = null;
+
 main();
 
 // the program main method
 function main() {
 
     // handle tree data for depending
-    let dependingTreeData = treeDataInit(cloneTreeData, mapTree);
+    let dependingTreeData = treeDataInit(cloneTreeData, mapTree, 'depend');
     // render depending folder and file tree
     renderTree(dependingTreeDom, dependingTreeData);
 
     // handle tree data for current
-    let currentTreeData = treeDataInit(cloneTreeDataCurrent, mapTreeCurrent);
+    let currentTreeData = treeDataInit(cloneTreeDataCurrent, mapTreeCurrent, 'current');
     // render current folder and file tree
     renderTree(currentTreeDom, currentTreeData);
 
+    refreshDiagram();
+
+    // bind click to expand and refresh diagram
+    bindEvent();
+}
+
+// update diagram when the data changed
+function refreshDiagram() {
     // calculate depending weight and draw diagram
     let showDependingNode = getShowingId(cloneTreeData);
     let showCurrentNode = getShowingId(cloneTreeDataCurrent);
@@ -45,7 +55,52 @@ function main() {
     drawLines(showDependingNode, showCurrentNode);
 }
 
+// event bind
+// click folder that was folded expanding it.
+function bindEvent(){
+    let domDepending = doc.querySelector('.depending_tree');
+    let domCurrent = doc.querySelector('.current_tree');
+
+    domDepending.addEventListener('click', clickCallback, false);
+    domCurrent.addEventListener('click', clickCallback, false);
+
+}
+
+// click event callback
+// @eve {Event} the click event object
+function clickCallback(eve) {
+    let target = eve.target;
+    let uldom = target.querySelector('ul');
+    if (target.tagName.toUpperCase() === 'LI' && uldom) {
+        let id = uldom.getAttribute('data-id');
+        let dtype = uldom.getAttribute('data-dtype');
+        let newClassName = '';
+        if (uldom.className === 'fold') {
+            newClassName = 'expand';
+        } else {
+            newClassName = 'fold';
+        }
+        uldom.className = newClassName;
+
+        let treeData;
+        if (dtype === 'depend') {
+            treeData = cloneTreeData;
+        } else {
+            treeData = cloneTreeDataCurrent
+        }
+        loopData(treeData, (childNode) => {
+            if (childNode.id === id) {
+                childNode.className = newClassName;
+            }
+        });
+        refreshDiagram();
+
+    }
+}
+
 // filter showing node id
+// @treeData {Object} that the data tree
+// @return {Object} that will showing node's id
 function getShowingId(treeData) {
     let showIds = {};
     loopData(treeData, (item) => {
@@ -105,6 +160,8 @@ function findMapId(depNode, showCurrentIds) {
 }
 
 // recursion parent
+// @node {Object} one node
+// @callack {Function} a callback function
 function recursiveParent(node, callback) {
     callback && callback(node);
 
@@ -115,6 +172,8 @@ function recursiveParent(node, callback) {
 
 
 // render current file and folder tree
+// @rootDom {DOM Object}
+// @treeDom {Object} the data nodes tree
 function renderTree(rootDom, treeData) {
     let ulDom = doc.createElement('ul');
     ulDom.className = treeData.className;
@@ -122,7 +181,10 @@ function renderTree(rootDom, treeData) {
     rootDom.appendChild(treeDom);
 }
 
-// render current file and folder tree
+// render current file and folder tree by recursion
+// @treeData {Object} the data nodes tree
+// @dom {DOM Object}
+// @return {DOM Object}
 function recursiveDomTree(treeData, dom){
 
     if (!treeData) {
@@ -131,6 +193,7 @@ function recursiveDomTree(treeData, dom){
     treeData.leaves.forEach((node) => {
         let childDom = appendElement(dom, 'li', {});
         childDom.setAttribute('data-id', node.id);
+        childDom.setAttribute('data-dtype', node.dtype);
         childDom.innerHTML = `<img src="./images/file.png" />${node.fName}`;
         if (Array.isArray(node.leaves) && node.leaves.length > 0) {
             childDom.innerHTML = `<img src="./images/folder.png" />${node.fName}`;
@@ -164,8 +227,15 @@ function appendElement (parentDom, ele, styleObj) {
 
 // draw lines to link from depending tree to current tree
 function drawLines(showDependingNode, showCurrentNode){
+    let domWraper = document.querySelector('.wraper');
+    let height = domWraper.clientHeight
 
-    let  draw = SVG('drawing').size(currentTreeDom.clientWidth, currentTreeDom.clientHeight);
+    if (!svgCanvas) {
+        svgCanvas = SVG('drawing').size(currentTreeDom.clientWidth, height);
+    } else {
+        svgCanvas.clear()
+        svgCanvas.size(currentTreeDom.clientWidth, height);
+    }
     Object.keys(showDependingNode).forEach((id)=>{
         let oneNode = showDependingNode[id];
 
@@ -182,7 +252,7 @@ function drawLines(showDependingNode, showCurrentNode){
                 x: currentTreeDom.clientWidth,
                 y: dom.offsetTop + 15 - 10,
             }
-            draw.polyline([[0, startPosition.y], [endPosition.x, endPosition.y]])
+            svgCanvas.polyline([[0, startPosition.y], [endPosition.x, endPosition.y]])
             .stroke({ width:  bolderStroke})
         });
     });
@@ -192,7 +262,8 @@ function drawLines(showDependingNode, showCurrentNode){
 // handle tree data
 // @treeData {Object} the variable cloneTreeData or cloneTreeDataCurrent
 // @mapTree {Object} the variable mapTree
-function treeDataInit(treeData, mapTree) {
+// @dtype {String} marke the node belong to which data (dependingTree or currentTree)
+function treeDataInit(treeData, mapTree, dtype) {
 
     if (!treeData) {
         throw new Error('treeData is undefined');
@@ -207,13 +278,11 @@ function treeDataInit(treeData, mapTree) {
         // build a double linked
         node.parent = parentNode;
 
+        node.dtype = dtype;
+
         // the level 0 default expand
         if (Array.isArray(node.leaves) && node.leaves.length >= 0) {
             node.className = 'fold';
-        }
-        // TODO: remove the test
-        if (['_n6q24ejo8r8', '_z484fh6n7dj'].includes(node.id)) {
-            node.className = 'expand';
         }
     }, 0);
     return treeData;
@@ -222,6 +291,7 @@ function treeDataInit(treeData, mapTree) {
 // loop every node by recursion
 // @treeData {Object} it is a tree
 // @callback {Function} a callback function
+// @level {Number} the node's level of the treeData
 function loopData(treeData, callback , level) {
 
     if (!treeData) {
