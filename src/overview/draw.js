@@ -9,20 +9,19 @@
 console.log(global.data);
 
 // depending tree
-let cloneTreeData = JSON.parse(JSON.stringify(global.data));
-let mapTree = {};
-let showDependingNode = {};
+let cloneTreeDataDeps = JSON.parse(JSON.stringify(global.data));
+let mapTreeDepending = {};
 
 // current tree
 let cloneTreeDataCurrent = JSON.parse(JSON.stringify(global.data));
 let mapTreeCurrent = {};
-let showCurrentNode = {};
 
-// basic most common variable
+// dom object for render tree and svg
 let dependingTreeDom = doc.querySelector('.depending_tree');
 let currentTreeDom = doc.querySelector('.current_tree');
 let mapLinesDom = doc.querySelector('.lines');
 
+// the svg for drawing lines
 let svgCanvas = null;
 
 main();
@@ -31,7 +30,7 @@ main();
 function main() {
 
     // handle tree data for depending
-    let dependingTreeData = treeDataInit(cloneTreeData, mapTree, 'depend');
+    let dependingTreeData = treeDataInit(cloneTreeDataDeps, mapTreeDepending, 'depend');
     // render depending folder and file tree
     renderTree(dependingTreeDom, dependingTreeData);
 
@@ -49,10 +48,10 @@ function main() {
 // update diagram when the data changed
 function refreshDiagram() {
     // calculate depending weight and draw diagram
-    let showDependingNode = getShowingId(cloneTreeData);
-    let showCurrentNode = getShowingId(cloneTreeDataCurrent);
-    calDepsWeight(showDependingNode, showCurrentNode);
-    drawLines(showDependingNode, showCurrentNode);
+    let showingDepNodes = getShowingId(cloneTreeDataDeps);
+    let showingCurrentNode = getShowingId(cloneTreeDataCurrent);
+    calDepsWeight(showingDepNodes, showingCurrentNode);
+    drawLines(showingDepNodes, showingCurrentNode);
 }
 
 // event bind
@@ -84,7 +83,7 @@ function clickCallback(eve) {
 
         let treeData;
         if (dtype === 'depend') {
-            treeData = cloneTreeData;
+            treeData = cloneTreeDataDeps;
         } else {
             treeData = cloneTreeDataCurrent
         }
@@ -97,9 +96,14 @@ function clickCallback(eve) {
     }
 }
 
-// filter showing node id
-// @treeData {Object} that the data tree
-// @return {Object} that will showing node's id
+/* *
+ * filter showing node id
+ * nodes that are viewed
+ *
+ * @treeData {Object} that the data tree
+ * @return {Object} that will showing node's id
+ * {xxx: {}, xxx2: {}}
+ * */
 function getShowingId(treeData) {
     let showIds = {};
     loopData(treeData, (item) => {
@@ -107,6 +111,8 @@ function getShowingId(treeData) {
         if (item.className === 'fold' && item.parent.className === 'expand') {
             showIds[item.id]  = {};
         }
+
+        // a file node that parent is expand is showing
         if (/\.(js|ts)$/.test(item.fName) && item.parent.className === 'expand') {
             showIds[item.id]  = {};
         }
@@ -122,16 +128,16 @@ function calDepsWeight(dependNodes, currentNodes) {
     let currentNodeIds = Object.keys(currentNodes);
 
     dependNodeIds.forEach((id) => {
-        // first of all ,solve the first folder
-        let firstNode = mapTree[id];
-
+        let oneNode = mapTreeDepending[id];
         // map to current node and give a weight
         dependNodes[id] = {};
-        loopData(firstNode, (childNode) => {
+
+        // loop all children to calculate the oneNode's weight
+        loopData(oneNode, (childNode) => {
             if (Array.isArray(childNode.deps)) {
                 childNode.deps.forEach((subId) => {
                     // find current node id and  add weight
-                    let referringToCurrentNodeId = findMapId(mapTree[subId],  currentNodeIds);
+                    let referringToCurrentNodeId = findMapId(mapTreeDepending[subId],  currentNodeIds);
                     if (referringToCurrentNodeId) {
                         if (!dependNodes[id][referringToCurrentNodeId]) {
                             dependNodes[id][referringToCurrentNodeId] = 1;
@@ -147,7 +153,8 @@ function calDepsWeight(dependNodes, currentNodes) {
 
 // find map id
 // @dependingNode {String}
-// @showCurrentNode {Array} all currently showing node ids
+// @showCurrentIds {Array} all currently showing node ids
+// @return {String} the node's unique id
 function findMapId(depNode, showCurrentIds) {
     let id;
     recursiveParent(depNode, (parentNode) => {
@@ -208,7 +215,7 @@ function recursiveDomTree(treeData, dom){
 // append a element
 // @parentDom {DOM} parent dom
 // @ele {String} the dom tagName
-// @styleObj {Object} css style object
+// @styleObj {Object} the customer self style
 // @return {DOM} new ul dom
 function appendElement (parentDom, ele, styleObj) {
     let element = doc.createElement(ele);
@@ -241,6 +248,8 @@ function drawLines(showDependingNode, showCurrentNode){
         let depDom = document.querySelector('.depending_tree  [data-id="'+ id +'"]');
         let startPosition = {
             x: 0,
+
+            // vertical center the start point
             y: depDom.offsetTop + 15 - 10,
         };
 
@@ -259,7 +268,7 @@ function drawLines(showDependingNode, showCurrentNode){
 }
 
 // handle tree data
-// @treeData {Object} the variable cloneTreeData or cloneTreeDataCurrent
+// @treeData {Object} the variable cloneTreeDataDeps or cloneTreeDataCurrent
 // @mapTree {Object} the variable mapTree
 // @dtype {String} marke the node belong to which data (dependingTree or currentTree)
 function treeDataInit(treeData, mapTree, dtype) {
