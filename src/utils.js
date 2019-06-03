@@ -9,10 +9,22 @@ const config = require('./config');
 function fixPath(relativePath, currentPath) {
   let rt = relativePath;
 
-  // prefix './'
   if (config.RELATIVE_PATH_PREFIX_REG.test(relativePath)) {
+    // prefix like ./
     rt = currentPath + relativePath.replace(config.RELATIVE_PATH_PREFIX_REG, '');
+
+  } else if(/^(\.\.\/)(\1)*/.test(relativePath)) {
+    // prefix like ../xxx, ../../xxx
+    let dotsAndSlashArr = relativePath.match(/^(\.\.\/)(\1)*/g);
+
+    // 3 is the length of ../
+    let appearTimes = dotsAndSlashArr[0].length / 3;
+
+    let suffixReg = new RegExp('(\\w+\\/){0,'+ appearTimes +'}$', 'g');
+    rt = currentPath.replace(suffixReg, '') + relativePath.replace(/^(\.\.\/)(\1)*/g,'');
+
   } else {
+    // prefix like xxx
     rt = config.CUSTOMER_ROOT_PATH + relativePath;
   }
 
