@@ -9,30 +9,39 @@ const config = require('./config');
 function fixPath(relativePath, currentPath) {
   let rt = relativePath;
 
+  // prefix like ./
   if (config.RELATIVE_PATH_PREFIX_REG.test(relativePath)) {
-    // prefix like ./
     rt = currentPath + relativePath.replace(config.RELATIVE_PATH_PREFIX_REG, '');
 
-  } else if(/^(\.\.\/)(\1)*/.test(relativePath)) {
-    // prefix like ../xxx, ../../xxx
+  }
+
+  // prefix like ../xxx, ../../xxx
+  if(/^(\.\.\/)(\1)*/.test(relativePath)) {
     let dotsAndSlashArr = relativePath.match(/^(\.\.\/)(\1)*/g);
 
     // 3 is the length of ../
     let appearTimes = dotsAndSlashArr[0].length / 3;
 
     let suffixReg = new RegExp('(\\w+\\/){0,'+ appearTimes +'}$', 'g');
-    rt = currentPath.replace(suffixReg, '') + relativePath.replace(/^(\.\.\/)(\1)*/g,'');
+    let removedSuffix = currentPath.replace(suffixReg, '');
+    let removedPrefix = relativePath.replace(/^(\.\.\/)(\1)*/g,'');
+    rt = removedSuffix + removedPrefix;
 
-  } else {
-    // prefix like xxx
+  }
+
+  // prefix like xxx
+  if (/^[^\.]/.test(relativePath)) {
     rt = config.CUSTOMER_ROOT_PATH + relativePath;
   }
 
   // fix shorthand module  add index.js
-  if (!fs.existsSync(rt +'.js')) {
+  if (fs.existsSync(rt + '.js')) {
+    rt += '.js';
+  } else if (fs.existsSync(rt + '/index.js')) {
     rt += '/index.js';
   } else {
-    rt += '.js';
+    // it's a node module if
+    rt += '-node_nodule.js';
   }
 
   return rt;
