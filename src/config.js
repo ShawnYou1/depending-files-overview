@@ -1,4 +1,11 @@
-// use react as the debug
+/**
+ * config.js
+ * store some const variables
+ *
+ * */
+
+'use strict';
+
 // https://github.com/facebook/react/tree/master/packages
 const ROOT_FOLDER = 'packages';
 const ROOT_PATH = './react-master';
@@ -14,7 +21,7 @@ const RELATIVE_PATH_PREFIX_REG = /^\.\//;
 const MODULE_ES6_PATH_REG = /(export|import).+from\s+(['"])([\w\/\.\-]+)\2([^;])?/g;
 const MODULE_COMMONJS_PATH_REG = /(require)\((['"])([\w\/\.\-]+)\2\)([^;])?/g;
 
-// depending relation data file path
+// to use store depending relation data
 const DATA_PATH = './overview/data.js';
 
 module.exports = {

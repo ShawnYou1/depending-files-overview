@@ -1,14 +1,33 @@
-// File Tree class
+/**
+ * fileTree.js
+ * define Filetree class
+ *
+ * recursive method
+ * addNode method
+ * loop method
+ *
+ * */
+
+'use strict';
+
+/**
+ * file tree class
+ *
+ * */
 function Filetree() {
     this.rootNode = null;
 
-    // convert path to id or id to path
+    // a map container to convert path to id or id to path
     // a map table {id: path, path: id}
     this.pathToId = {};
 }
 
-// add a node into the file tree by path
-// @node {Node}
+/**
+ * addNode method
+ * add a node into the file tree by path
+ * @newNode {Node} node instance
+ *
+ * */
 Filetree.prototype.addNode = function(newNode){
     let eachFilePath;
     if (!this.rootNode) {
@@ -24,17 +43,23 @@ Filetree.prototype.addNode = function(newNode){
     }
 }
 
-// loop the file tree
-// @callback {Function} a callback function
+/**
+ * loop method to travel the file tree
+ * @callback {Function} travel each node as the callback's parameter
+ *
+ * */
 Filetree.prototype.loop = function(callback){
     if (this.rootNode) {
         Filetree.recursive(this.rootNode, callback);
     }
 }
 
-// Filetree class static method recursive
-// @node {Node} a node
-// @callback {Function} a callback function
+/**
+ * recursive static method  to travle every node
+ * @node {Node} a node
+ * @callback {Function} travel each node as the callback's parameter
+ *
+ * */
 Filetree.recursive = function(node, callback){
     callback(node);
     if (node.leaves && node.leaves.length > 0) {

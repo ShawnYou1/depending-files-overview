@@ -1,8 +1,18 @@
+/**
+ * node.js
+ * define Node class
+ *
+ * */
 
-// node class
-// @id {String} unique id to sign a node
-// @fName {String} folder or file name, so it named fName
-// @filePath {String} file's path
+'use strict';
+
+/**
+ * Node class
+ * @id {String} unique id to sign a node instance
+ * @fName {String} folder or file name, so it named fName
+ * @filePath {String} file's path
+ *
+ * */
 function Node(id, fName, filePath) {
 
     // basic info
@@ -10,10 +20,10 @@ function Node(id, fName, filePath) {
     this.fName = fName;
     this.filePath = filePath;
 
-    // lots of leaves
+    // store sub node
     this.leaves = [];
 
-    // depend modules
+    // store depend modules
     this.deps = [];
 }
 

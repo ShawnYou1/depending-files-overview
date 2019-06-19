@@ -1,11 +1,24 @@
+/**
+ * utils.js
+ * some utils method
+ *
+ * fixPath method
+ * parse method
+ * uniqueId method
+ *
+ * */
+
+'use strict';
+
 const fs = require('fs');
 const config = require('./config');
 
-// conver relative path to total path
-// @relativePath {String} like 'a/b/c' or './a/b/c'
-// @currentPath {String} current file path with root path
-// @CUSTOMER_ROOT_PATH {String} 'a/b/c'
-// @return {String} with completely path
+/**
+ * fixPath method to fix relative path to absolute path
+ * @relativePath {String} like 'a/b/c' or './a/b/c'
+ * @currentPath {String} current file path with root path
+ * @return {String} with completely path
+ * */
 function fixPath(relativePath, currentPath) {
   let rt = relativePath;
 
@@ -48,9 +61,12 @@ function fixPath(relativePath, currentPath) {
 }
 
 
-// get a module from a line code
-// @lineCode {String} like 'import a from "./folder/file1"'
-// @return {String} the file module path
+/**
+ * parse method
+ * get a module from a string lineCode
+ * @lineCode {String} like 'import a from "./folder/file1"'
+ * @return {String} the file module path
+ * */
 function parse(lineCode) {
   // console.log(lineCode);
   let matches = lineCode.match(/(['"])(.+)\1/);
@@ -61,7 +77,11 @@ function parse(lineCode) {
   }
 }
 
-// generate unique id
+/**
+ * uniqueId method
+ * generate unique id
+ * @return {String}
+ * */
 function uniqueId() {
     return Math.random().toString(36).replace('0.', '_');
 }
