@@ -8,7 +8,7 @@
 const fs = require('fs');
 
 // Node Class
-let Node = require('./node');
+let Node = require('./Class/node');
 
 // utils function
 let utils = require('./utils');

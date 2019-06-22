@@ -78,6 +78,20 @@ function parse(lineCode) {
 }
 
 /**
+ * writeToFile
+ * @filePath  {String} file's path
+ * @return {Function}
+ * */
+function writeToFile(filePath) {
+    const fd = fs.openSync(filePath, 'w');
+
+    // @content {String} the data will be wrote to the file path
+    return function(content) {
+        fs.writeSync(fd, content);
+    }
+}
+
+/**
  * uniqueId method
  * generate unique id
  * @return {String}
@@ -92,4 +106,6 @@ module.exports = {
     parse: parse,
 
     uniqueId: uniqueId,
+
+    writeToFile: writeToFile,
 };

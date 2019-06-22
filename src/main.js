@@ -9,10 +9,7 @@
 const config = require('./config');
 
 // Filetree Class
-let Filetree = require('./fileTree');
-
-// utils function
-let utils = require('./utils');
+let Filetree = require('./Class/fileTree');
 
 // buildFilePathTree function
 let buildFilePathTree = require('./buildFilePathTree');
