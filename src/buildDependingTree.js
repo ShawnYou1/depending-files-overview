@@ -48,11 +48,7 @@ function buildDependingTree(_fileTree) {
  * */
 function getDependingIds(content, currentPath, _pathToId) {
   let rt = [];
-  let modulesPath = content.match(config.MODULE_ES6_PATH_REG) || [];
-  let commonjsModule = content.match(config.MODULE_COMMONJS_PATH_REG);
-  if (Array.isArray(commonjsModule)) {
-    modulesPath = modulesPath.concat(commonjsModule);
-  }
+  let modulesPath = getDependingLines(content);
 
   if (Array.isArray(modulesPath)) {
     rt = modulesPath.map((str) => {
@@ -63,6 +59,48 @@ function getDependingIds(content, currentPath, _pathToId) {
   }
 
   return rt;
+}
+
+/**
+ * getDependingLines
+ * @content {String} a string that will be matched
+ * @return {Array}
+ * */
+function getDependingLines(content) {
+    return matchedByES6(content).concat(matchedByCommonJS(content));
+}
+
+/**
+ * matchedByES6
+ * @content {String}
+ * @return {Array}
+ * */
+function matchedByES6(content) {
+    return getMatchedLines(content, config.MODULE_ES6_PATH_REG);
+}
+
+/**
+ * matchedByCommonJS
+ * @content {String}
+ * @return {Array}
+ * */
+function matchedByCommonJS(content) {
+    return getMatchedLines(content, config.MODULE_COMMONJS_PATH_REG);
+}
+
+/**
+ * getMatched by reg
+ * @content {String}
+ * @reg {RegExp}
+ * @return {Array} the default is empty array
+ * */
+function getMatchedLines(content, reg) {
+    let drt = [];
+    let matched = content.match(reg)
+    if (Array.isArray(matched)) {
+        drt = matched;
+    }
+    return  drt;
 }
 
 module.exports = buildDependingTree;
