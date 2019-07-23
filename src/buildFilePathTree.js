@@ -39,7 +39,7 @@ function recursiveFolder(_folder, aPath, _fileTree) {
     let node = new Node(utils.uniqueId(), _folder, aPath);
     _fileTree.addNode(node);
 
-    let folderTotalDir = `${aPath}/${_folder}`
+    let folderTotalDir = `${aPath}/${_folder}`;
 
     // convenient to convert
     _fileTree.pathToId[node.id] = folderTotalDir;

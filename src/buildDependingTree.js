@@ -22,20 +22,28 @@ let utils = require('./utils');
  * */
 function buildDependingTree(_fileTree) {
     // loop storing depending node's id
-    // deps: ['a/b/c', ...] => ['_id', ...]
     _fileTree.loop((node) => {
-        let totalPath = `${node.filePath}/${node.fName}`;
-        // no leaves indicate it just a file
-        if (node.leaves === null) {
-            let content = fs.readFileSync(totalPath, 'utf8');
-            node.deps = getDependingIds(content, node.filePath + '/', _fileTree.pathToId);
-        }
+        buildOneFileDepending(node, _fileTree.pathToId);
     });
 
     return _fileTree;
 }
 
-
+/**
+ * buildOneFileDepending
+ * store depending relations at node's attribute deps
+ * deps: ['a/b/c', ...] => ['_id', ...]
+ * @node {Node}
+ * @_pathToId {Map}
+ * */
+function buildOneFileDepending(node, _pathToId) {
+    let totalPath = `${node.filePath}/${node.fName}`;
+    // no leaves indicate it just a file
+    if (node.leaves === null) {
+        let content = fs.readFileSync(totalPath, 'utf8');
+        node.deps = getDependingIds(content, node.filePath + '/', _pathToId);
+    }
+}
 
 
 /**
@@ -48,17 +56,28 @@ function buildDependingTree(_fileTree) {
  * */
 function getDependingIds(content, currentPath, _pathToId) {
   let rt = [];
-  let modulesPath = getDependingLines(content);
+  let matchedLines = getDependingLines(content);
 
-  if (Array.isArray(modulesPath)) {
-    rt = modulesPath.map((str) => {
-      let modulePath = utils.parse(str);
-      let fixedPath = utils.fixPath(modulePath, currentPath);
+  if (Array.isArray(matchedLines)) {
+    rt = matchedLines.map((oneLine) => {
+      let fixedPath = getOneDependingPath(oneLine, currentPath);
       return _pathToId[fixedPath];
     });
   }
 
   return rt;
+}
+
+/**
+ * getOneDependingPath
+ * @lineStr {String} a line code
+ * @currentPath {String} the file's current path
+ * @return {String} path
+ * */
+function getOneDependingPath(lineStr, currentPath) {
+  let modulePath = utils.parse(lineStr);
+  let fixedPath = utils.fixPath(modulePath, currentPath);
+  return fixedPath;
 }
 
 /**
